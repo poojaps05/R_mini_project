@@ -1,0 +1,43 @@
+ine_data$WineQuality))
+# Split the data into training and testing sets set.seed(123)
+train_indices <- createDataPartition(wine_data$WineQuality,
+p = 0.8, list = FALSE) train_data <- wine_data[train_indices,
+] test_data <- wine_data[-train_indices, ]
+# Train a random forest model wine_model <-
+train(factor(WineQuality) ~ ., data = train_data, method
+= "rf") # Make predictions on the test set predictions <-
+predict(wine_model, newdata = test_data)
+# Ensure predicted values have the same levels as actual
+values actual_levels <-
+levels(factor(test_data$WineQuality)) if
+(length(actual_levels) < 2) { actual_levels <-
+c(actual_levels, "AnotherLevel")
+test_data$WineQuality <- factor(test_data$WineQuality,
+levels = actual_levels)
+} predictions <- factor(predictions, levels =
+actual_levels) # Create confusion matrix using table
+function conf_matrix <- table(Actual =
+test_data$WineQuality, Predicted = predictions)
+# Save the formatted confusion matrix to CSV
+write.csv(addmargins(as.matrix(conf_matrix)),
+"wine_quality_confusion_matrix_1.csv") # Create data frame
+for Predicted vs. Actual values predicted_vs_actual <-
+data.frame(Predicted = as.numeric(predictions),
+Actual = as.numeric(test_data$WineQuality)) #
+Save Predicted vs. Actual values to CSV
+write.csv(predicted_vs_actual,
+"wine_quality_predicted_vs_actual_1.csv", row.names =
+FALSE)
+# Evaluate model performance conf_matrix
+<- confusionMatrix(predictions,
+factor(test_data$WineQuality))
+# Calculate additional metrics accuracy <-
+conf_matrix$overall["Accuracy"] precision <-
+conf_matrix$byClass["Precision"] recall <-
+conf_matrix$byClass["Recall"] f1_score <-
+conf_matrix$byClass["F1"]
+# Save metrics to a text file metrics <- data.frame(Metric
+= c("Accuracy", "Precision", "Recall", "F1-Score"),
+Value = c(accuracy, precision, recall,f1_score))
+write.table(metrics, "output/wine_quality_metrics.txt", quote
+= FALSE, row.names = FALSE, col.names = FALSE)
